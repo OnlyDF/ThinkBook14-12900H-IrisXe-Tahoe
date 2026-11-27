@@ -1,0 +1,23 @@
+--- a/install.sh
++++ b/install.sh
+@@ -117,6 +117,7 @@
+ if [[ "$1" == "--build-only" ]]; then print; print -P "  %F{green}%BBuilt.%b%f Nothing was installed (--build-only)."; print; exit 0; fi
+ 
+ step 4 "Install (your password is needed once)"
++[[ $(ioreg -r -c IOPCIDevice -n IGPU -d 1) == *'"device-id" = <499a0000>'* ]] || fail "ThinkBook: expected IGPU device-id 9A49 before writing the driver stack."
+ sudo -v
+ quiet "kexts and bundles in /Library" sudo zsh $ROOT/macos/install-macos.sh $SLE $LE
+ 
+--- a/macos/install-macos.sh
++++ b/macos/install-macos.sh
+@@ -39,5 +39,9 @@
+ echo "== registering kexts in the Auxiliary Kernel Collection"
+ kexts=(-p /Library/Extensions/AppleIntelTGLGraphics.kext -p /Library/Extensions/AppleIntelTGLGraphicsFramebuffer.kext)
+ kexts+=(-p /Library/Extensions/HookCase.kext)
+-/usr/bin/kmutil load -z --load-style match-only $kexts 2>&1 || true
++/usr/bin/kmutil load -z --load-style match-only $kexts 2>&1 || {
++  result=$?
++  print -u2 "AuxKC registration failed (kmutil exit $result). Save build/install.log and check approval before rebooting."
++  exit $result
++}
+ echo "done: approve the extension if asked, then reboot"

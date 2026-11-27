@@ -1,0 +1,19 @@
+# macOS / iCloud / temp files
+.DS_Store
+._*
+*.icloud
+*.log
+*.zip
+*.tar.gz
+
+# Unused / temporary folders & large offline archives
+migration-package/
+docs/
+
+# Reverted / personal backup EFI artifacts
+EFI/OC/Kexts/YogaCursorArb.kext/
+EFI/OC/config-before-*.plist
+EFI/OC/config-final-working.plist
+EFI/OC/config-gms60-backup.plist
+EFI/OC/config-xenobb-working.plist
+EFI/OC/config-accel.plist
