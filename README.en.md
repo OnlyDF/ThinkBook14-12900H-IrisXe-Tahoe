@@ -102,6 +102,12 @@ If macOS and Windows are installed on separate NVMe drives, set `Misc > Security
 
 ---
 
+## Known Issues & Caveats
+
+- **Avoid iStat Menus (especially launch-at-login)**: Installing iStat Menus with auto-start enabled causes a hard system freeze on every boot as soon as its status items appear in the menu bar. If you run into a boot-freeze loop after installing it, boot with the unaccelerated rescue config (`config-install.plist`) to disable auto-start or uninstall iStat Menus.
+
+---
+
 ## Credits
 
 This project builds directly upon the work of the open-source Hackintosh community:

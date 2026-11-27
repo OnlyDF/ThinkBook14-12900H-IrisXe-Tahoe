@@ -102,6 +102,12 @@ sudo rm -f /var/vm/sleepimage
 
 ---
 
+## 已知问题与注意事项
+
+- **请勿安装 iStat Menus（尤其不要开启开机自启）**：实测安装 iStat Menus 并设为开机自启后，每次开机进入桌面、顶部菜单栏刚出现 iStat Menus 状态项即会触发系统卡死。若已安装导致开机反复卡死，请切换至无加速救援配置（`config-install.plist`）进入系统后关闭自启或卸载 iStat Menus。
+
+---
+
 ## 致谢
 
 本项目站在以下开源社区工作的基础之上，特此致谢：
