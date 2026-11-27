@@ -25,7 +25,7 @@ OpenCore EFI for **Lenovo ThinkBook 14+ 2022 (iGPU-only, Intel Core i9-12900H / 
 | **iGPU** | Intel Iris Xe 96 EU (`8086:46A6`) | ✅ | Spoofed `9A49` + `NootedGreen` + `YogaGMSFix` (60 MiB GMS) + Metal 2 / Liquid Glass |
 | **Internal Display** | AUO `B140QAN04.0` (2880×1800 @ 90Hz) | ✅ | Native `1440×900 @ 90Hz` HiDPI; `ngreenblmax=17777` restores full 0–100% brightness |
 | **90Hz Cursor** | `SoftCursorFix.kext` (`-swcursor`) | ✅ | Fixes 90Hz hardware cursor horizontal black stripes via Apple's native Metal software cursor fallback |
-| **Audio** | Realtek ALC257 (`alcid=99`) | ✅ | `AppleALC` + `SimpleHDA 1.0.2` (`MinKernel=25.0.0`); built-in speakers and microphone work |
+| **Audio** | Realtek ALC257 (`alcid=99`) | ⚠️ | `AppleALC` + `SimpleHDA 1.0.2` (`MinKernel=25.0.0`); built-in speakers, 3.5mm headphone output, and Bluetooth mic work; internal Intel SST DMIC array mic is unsupported and 3.5mm combo-jack mic has no input under `alcid=99` |
 | **Wi-Fi / Bluetooth** | Intel AX210 (replaces stock MT7921) | ✅ | `AirportItlwm-Tahoe` + `itlwm_he=1` for native Wi-Fi 6 menu; `IntelBluetoothFirmware` + `BlueToolFixup` with AirPods auto-switching |
 | **Keyboard / Trackpad** | Built-in Keyboard + ELAN0662 (I2C) | ✅ | `VoodooPS2Controller` + `VoodooI2C` (`-vi2c-force-polling`) |
 | **Display Sleep / S0ix** | `XE-FBDPMS` + S0ix disabled | ⚠️ | **Display sleep & wake work reliably**; S3/S0ix full system sleep is unsupported (must be disabled — see below) |

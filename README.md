@@ -25,7 +25,7 @@
 | **核显加速** | Intel Iris Xe 96 EU (`8086:46A6`) | ✅ | 仿冒 `9A49` + `NootedGreen` + `YogaGMSFix` (60 MiB GMS) + Metal 2 / Liquid Glass |
 | **内屏显示** | AUO `B140QAN04.0` (2880×1800 @ 90Hz) | ✅ | 原生 `1440×900 @ 90Hz` HiDPI；`ngreenblmax=17777` 校准 0–100% 满亮度 |
 | **90Hz 光标** | `SoftCursorFix.kext` (`-swcursor`) | ✅ | 解决 90Hz 硬件光标黑条纹问题，原生回退至 Metal 软件合成光标 |
-| **声卡** | Realtek ALC257 (`alcid=99`) | ✅ | `AppleALC` + `SimpleHDA 1.0.2`（`MinKernel=25.0.0`），内置扬声器与麦克风正常 |
+| **声卡** | Realtek ALC257 (`alcid=99`) | ⚠️ | `AppleALC` + `SimpleHDA 1.0.2`（`MinKernel=25.0.0`）；内置扬声器、3.5mm 耳机输出与蓝牙耳麦正常；机身内置阵列麦（Intel SST DMIC）无驱，3.5mm 麦在 `alcid=99` 下无输入 |
 | **无线 / 蓝牙** | Intel AX210（替换原机 MT7921） | ✅ | `AirportItlwm-Tahoe` + `itlwm_he=1` 原生 Wi-Fi 6 菜单；`IntelBluetoothFirmware` + `BlueToolFixup` 支持 AirPods 自动切换 |
 | **键鼠 / 触控板** | 内置键盘 + ELAN0662 (I2C) | ✅ | `VoodooPS2Controller` + `VoodooI2C` (`-vi2c-force-polling`) |
 | **息屏与睡眠** | `XE-FBDPMS` + 禁用 S0ix | ⚠️ | **息屏复亮正常**；不支持 S3/S0ix 整机睡眠（必须禁用整机睡眠，见下文） |
