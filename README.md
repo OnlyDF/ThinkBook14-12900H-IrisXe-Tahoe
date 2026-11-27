@@ -1,5 +1,7 @@
 # ThinkBook 14+ 2022 (i9-12900H / Iris Xe) — macOS Tahoe 26.7.1 EFI
 
+**中文** | [English](README.en.md)
+
 适用于 **Lenovo ThinkBook 14+ 2022（纯核显版，i9-12900H / Intel Iris Xe 96 EU）** 的 **macOS Tahoe 26.7.1 (Build `25G241`)** OpenCore EFI，包含原生 2.8K 90Hz 加速、满亮度校准、90Hz 光标修复插件 (`SoftCursorFix.kext`)、混合架构睿频与内置扬声器支持。
 
 > **重要版本限制**：本方案的图形驱动与内核补丁强绑定 **macOS Tahoe 26.7.1 (`25G241`)**，请勿随意升级系统小版本。
@@ -108,3 +110,4 @@ sudo rm -f /var/vm/sleepimage
 - [ThinkBook14-AlderLake-Hackintosh](https://github.com/ruixian94/ThinkBook14-AlderLake-Hackintosh) — ThinkBook 14+ 2022 ACPI 与外设基线
 - [SimpleHDA](https://github.com/laobamac/SimpleHDA) — macOS Tahoe AppleHDA 音频恢复方案
 - [Acidanthera](https://github.com/acidanthera) — OpenCore、Lilu、VirtualSMC、AppleALC、BlueToolFixup 等核心驱动
+- **ChatGPT 6.2 Sol** & **Gemini 4 Neon** — 在驱动逆向分析、`SoftCursorFix` 开发调试及文档整理过程中提供的协助
