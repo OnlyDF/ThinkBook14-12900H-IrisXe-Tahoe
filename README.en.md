@@ -21,15 +21,15 @@ OpenCore EFI for **Lenovo ThinkBook 14+ 2022 (iGPU-only, Intel Core i9-12900H / 
 | Component | Hardware / Solution | Status | Notes |
 | :--- | :--- | :---: | :--- |
 | **Model** | Lenovo ThinkBook 14+ 2022 (iGPU-only) | ✅ | Disable Secure Boot in BIOS, set storage to AHCI/NVMe, keep E-cores enabled |
-| **CPU** | Intel Core i9-12900H (6P + 8E, 20 threads) | ✅ | `CpuTopologyRebuild` + `-ngreenpm` unlocks hybrid HWP/EPP turbo and C8/C10 power saving |
+| **CPU** | Intel Core i9-12900H (6P + 8E, 20 threads) | ✅ | `CpuTopologyRebuild` + `ngreenpm=64` unlocks hybrid HWP/EPP turbo, C8/C10 power saving, and 64W sustained PL1 (bypasses EC 25W cap) |
 | **iGPU** | Intel Iris Xe 96 EU (`8086:46A6`) | ✅ | Spoofed `9A49` + `NootedGreen` + `YogaGMSFix` (60 MiB GMS) + Metal 2 / Liquid Glass |
 | **Internal Display** | AUO `B140QAN04.0` (2880×1800 @ 90Hz) | ✅ | Native `1440×900 @ 90Hz` HiDPI; `ngreenblmax=17777` restores full 0–100% brightness |
 | **90Hz Cursor** | `SoftCursorFix.kext` (`-swcursor`) | ✅ | Fixes 90Hz hardware cursor horizontal black stripes via Apple's native Metal software cursor fallback |
 | **Audio** | Realtek ALC257 (`alcid=99`) | ✅ | `AppleALC` + `SimpleHDA 1.0.2` (`MinKernel=25.0.0`); built-in speakers and microphone work |
-| **Wi-Fi / Bluetooth** | Intel AX210 (replaces stock MT7921) | ✅ | `AirportItlwm-Tahoe` for native Wi-Fi menu; `IntelBluetoothFirmware` + `BlueToolFixup` with AirPods auto-switching |
+| **Wi-Fi / Bluetooth** | Intel AX210 (replaces stock MT7921) | ✅ | `AirportItlwm-Tahoe` + `itlwm_he=1` for native Wi-Fi 6 menu; `IntelBluetoothFirmware` + `BlueToolFixup` with AirPods auto-switching |
 | **Keyboard / Trackpad** | Built-in Keyboard + ELAN0662 (I2C) | ✅ | `VoodooPS2Controller` + `VoodooI2C` (`-vi2c-force-polling`) |
 | **Display Sleep / S0ix** | `XE-FBDPMS` + S0ix disabled | ⚠️ | **Display sleep & wake work reliably**; S3/S0ix full system sleep is unsupported (must be disabled — see below) |
-| **HW Video Decode** | H.264 / HEVC (`-ngreengva`) | Optional | Requires manually building/installing upstream `VADriver`; breaks FairPlay DRM (Apple Music / Apple TV+) |
+| **HW Video Decode** | H.264 / HEVC (`-ngreengva`) | ✅ / Optional | `-ngreengva` enabled by default; requires manually installing upstream `VADriver` (remove `-ngreengva` if you need FairPlay DRM in Apple Music / TV+) |
 | **AirDrop / Thunderbolt** | AWDL / Thunderbolt 3 | ❌ / Disabled | Intel Wi-Fi does not support AirDrop/AWDL; Thunderbolt SSDT is disabled by default |
 
 ---
@@ -92,13 +92,15 @@ If macOS and Windows are installed on separate NVMe drives, set `Misc > Security
 
 ### 3. Smoothness & Optional Tweaks
 - **UI Smoothness**: Enable **Reduce Transparency** (*System Settings → Accessibility → Display*) to significantly cut Tahoe Liquid Glass compositing overhead in 3D maps, remote desktop, and other graphics-heavy apps.
-- **Optional Wi-Fi 6 (802.11ax)**: Append `itlwm_he=1` to `boot-args` to enable Wi-Fi 6 speeds on the AX210.
-- **Optional H.264 / HEVC Hardware Decode**: Follow the upstream repo to build/install `/Library/GPUBundles/AppleIntelTGLGraphicsVADriver.bundle` and add `-ngreengva` to `boot-args` (note: this disables FairPlay playback in Apple Music / Apple TV+).
+- **Wi-Fi 6 (802.11ax)**: `itlwm_he=1` is enabled by default in `config.plist` for AX210 Wi-Fi 6 speeds.
+- **H.264 / HEVC Hardware Decode**: `-ngreengva` is included by default in `config.plist`; build/install `/Library/GPUBundles/AppleIntelTGLGraphicsVADriver.bundle` from the upstream repo to activate it (remove `-ngreengva` if you need FairPlay playback in Apple Music / Apple TV+).
 - **Key Boot-Args**:
   - `-xenobb`: Skips `XE-BOOTHOLD` boot-time blanking wait to prevent black-screen lockups at boot.
   - `ngreenblmax=17777`: Matches the `96000` PWM period of the `AUO B140QAN04.0` panel to restore 100% max brightness.
   - `-swcursor`: Enables `SoftCursorFix.kext` (remove it or add `-swcursoroff` to disable).
-  - `-ngreenpm`: Enables hybrid CPU turbo and power management (check status via `sysctl debug.xepm`).
+  - `ngreenpm=64`: Enables hybrid CPU turbo/power management and sets MCHBAR PL1 to 64W (valid range `5–64` W; unlocks the default 25W EC cap; use `ngreenpm=45` for quieter operation; check status via `sysctl debug.xepm`).
+  - `-ngreengva`: Enables H.264 / HEVC hardware video decode with `AppleIntelTGLGraphicsVADriver.bundle`.
+  - `itlwm_he=1`: Enables 802.11ax (Wi-Fi 6) mode on the Intel AX210.
 
 ---
 

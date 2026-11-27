@@ -1629,7 +1629,7 @@
 				AAAAAAAAAAAAAAAAAAA=
 				</data>
 				<key>boot-args</key>
-				<string>-ngreentglwithgfx -allow3d -disablegfxfirmware ngreen-dmc=adlp -ngreenv189 -ngreenkeepefi -ngreenxefix -ngreenfixbootmode amfi_get_out_of_my_way=1 ngreenSched=4 ngreenV142=3 gfxrst=1 alcid=99 -vi2c-force-polling -alcbeta -ecebeta -v keepsyms=1 debug=0x100 -xenobb ngreenblmax=17777 -swcursor -ngreenpm</string>
+				<string>-ngreentglwithgfx -allow3d -disablegfxfirmware ngreen-dmc=adlp -ngreenv189 -ngreenkeepefi -ngreenxefix -ngreenfixbootmode amfi_get_out_of_my_way=1 ngreenSched=4 ngreenV142=3 gfxrst=1 alcid=99 -vi2c-force-polling -alcbeta -ecebeta -v keepsyms=1 debug=0x100 -xenobb ngreenblmax=17777 -swcursor ngreenpm=64 -ngreengva itlwm_he=1</string>
 				<key>csr-active-config</key>
 				<data>
 				EwoAAA==

@@ -21,15 +21,15 @@
 | 模块 | 硬件 / 方案 | 状态 | 说明 |
 | :--- | :--- | :---: | :--- |
 | **机型** | Lenovo ThinkBook 14+ 2022（纯核显） | ✅ | BIOS 关闭 Secure Boot，硬盘模式 AHCI/NVMe，保持 E-cores 开启 |
-| **CPU** | Intel Core i9-12900H (6P + 8E, 20 线程) | ✅ | `CpuTopologyRebuild` + `-ngreenpm` 解锁混合架构 HWP/EPP 睿频与 C8/C10 省电 |
+| **CPU** | Intel Core i9-12900H (6P + 8E, 20 线程) | ✅ | `CpuTopologyRebuild` + `ngreenpm=64` 解锁混合架构 HWP/EPP 睿频、C8/C10 省电及 64W 持续功耗墙（突破 EC 默认 25W 限制） |
 | **核显加速** | Intel Iris Xe 96 EU (`8086:46A6`) | ✅ | 仿冒 `9A49` + `NootedGreen` + `YogaGMSFix` (60 MiB GMS) + Metal 2 / Liquid Glass |
 | **内屏显示** | AUO `B140QAN04.0` (2880×1800 @ 90Hz) | ✅ | 原生 `1440×900 @ 90Hz` HiDPI；`ngreenblmax=17777` 校准 0–100% 满亮度 |
 | **90Hz 光标** | `SoftCursorFix.kext` (`-swcursor`) | ✅ | 解决 90Hz 硬件光标黑条纹问题，原生回退至 Metal 软件合成光标 |
 | **声卡** | Realtek ALC257 (`alcid=99`) | ✅ | `AppleALC` + `SimpleHDA 1.0.2`（`MinKernel=25.0.0`），内置扬声器与麦克风正常 |
-| **无线 / 蓝牙** | Intel AX210（替换原机 MT7921） | ✅ | `AirportItlwm-Tahoe` 原生 Wi-Fi 菜单；`IntelBluetoothFirmware` + `BlueToolFixup` 支持 AirPods 自动切换 |
+| **无线 / 蓝牙** | Intel AX210（替换原机 MT7921） | ✅ | `AirportItlwm-Tahoe` + `itlwm_he=1` 原生 Wi-Fi 6 菜单；`IntelBluetoothFirmware` + `BlueToolFixup` 支持 AirPods 自动切换 |
 | **键鼠 / 触控板** | 内置键盘 + ELAN0662 (I2C) | ✅ | `VoodooPS2Controller` + `VoodooI2C` (`-vi2c-force-polling`) |
 | **息屏与睡眠** | `XE-FBDPMS` + 禁用 S0ix | ⚠️ | **息屏复亮正常**；不支持 S3/S0ix 整机睡眠（必须禁用整机睡眠，见下文） |
-| **硬解视频** | H.264 / HEVC (`-ngreengva`) | 可选 | 需配合上游 `VADriver` 手动安装；开启后 Apple Music / Apple TV+ FairPlay 不可用 |
+| **硬解视频** | H.264 / HEVC (`-ngreengva`) | ✅ / 可选 | 默认已加入 `-ngreengva`，需配合上游 `VADriver` 安装生效；开启后 Apple Music / Apple TV+ FairPlay 不可用（不需要可移除） |
 | **AirDrop / 雷电** | AWDL / Thunderbolt 3 | ❌ / 未启用 | Intel 网卡不支持 AirDrop/AWDL；雷电 SSDT 默认禁用 |
 
 ---
@@ -92,13 +92,15 @@ sudo rm -f /var/vm/sleepimage
 
 ### 3. 日常流畅度与可选扩展
 - **流畅度优化**：在「系统设置 → 辅助功能 → 显示」中开启 **降低透明度**，可显著降低 Tahoe Liquid Glass 毛玻璃的帧同步开销，提升 3D 地图、远程桌面等重图形应用流畅度。
-- **可选 Wi-Fi 6 (802.11ax)**：在 `boot-args` 中追加 `itlwm_he=1` 即可为 AX210 开启 Wi-Fi 6 速率。
-- **可选 H.264 / HEVC 硬解**：参照上游仓库构建安装 `/Library/GPUBundles/AppleIntelTGLGraphicsVADriver.bundle` 并在 `boot-args` 加入 `-ngreengva`（注意会影响 Apple Music / Apple TV+ FairPlay 播放）。
+- **Wi-Fi 6 (802.11ax)**：`config.plist` 已默认开启 `itlwm_he=1`（AX210 Wi-Fi 6 速率）。
+- **H.264 / HEVC 硬解**：`config.plist` 已默认包含 `-ngreengva`，需参照上游仓库构建安装 `/Library/GPUBundles/AppleIntelTGLGraphicsVADriver.bundle` 后生效（如需要使用 Apple Music / Apple TV+ FairPlay 播放，移除 `-ngreengva` 即可）。
 - **核心参数说明**：
   - `-xenobb`：跳过 `XE-BOOTHOLD` 启动期熄屏等待，避免开机黑屏锁死。
   - `ngreenblmax=17777`：匹配 `AUO B140QAN04.0` 面板 `96000` PWM 周期，恢复 100% 满亮度。
   - `-swcursor`：启用 `SoftCursorFix.kext`（移除该参数或加 `-swcursoroff` 即可关闭）。
-  - `-ngreenpm`：启用混合架构 CPU 睿频与节能策略（可通过 `sysctl debug.xepm` 查看状态）。
+  - `ngreenpm=64`：启用混合架构 CPU 睿频与节能策略，并将 MCHBAR PL1 功耗墙设为 64W（NootedGreen 支持范围 `5–64` W；解决 EC 默认锁死 25W 的问题；偏爱静音可改为 `ngreenpm=45`，通过 `sysctl debug.xepm` 查看状态）。
+  - `-ngreengva`：配合 `AppleIntelTGLGraphicsVADriver.bundle` 开启 H.264 / HEVC 视频硬解。
+  - `itlwm_he=1`：为 AX210 开启 802.11ax (Wi-Fi 6) 模式。
 
 ---
 
