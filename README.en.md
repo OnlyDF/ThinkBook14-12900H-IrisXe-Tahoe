@@ -49,8 +49,11 @@ OpenCore EFI for **Lenovo ThinkBook 14+ 2022 (iGPU-only, Intel Core i9-12900H / 
 │       └── Kexts/                  # Complete kext set (NootedGreen / YogaGMSFix / SoftCursorFix / SimpleHDA)
 ├── patches/
 │   └── thinkbook-register.patch    # Upstream install script patch adapted for ThinkBook
-└── research/
-    └── soft-cursor-fix/            # SoftCursorFix.kext source code and native macOS build script
+├── research/
+│   └── soft-cursor-fix/            # SoftCursorFix.kext source code and native macOS build script
+└── tools/
+    ├── xe-watchdog.py              # Lightweight health watchdog (GPU/GART/crash loops/95°C temp)
+    └── XeNotify.swift              # Native macOS alert notifier (opens Terminal with prefilled confirm command)
 ```
 
 ---
@@ -101,12 +104,22 @@ If macOS and Windows are installed on separate NVMe drives, set `Misc > Security
   - `ngreenpm=64`: Enables hybrid CPU turbo/power management and sets MCHBAR PL1 to 64W (valid range `5–64` W; unlocks the default 25W EC cap; use `ngreenpm=45` for quieter operation; check status via `sysctl debug.xepm`).
   - `-ngreengva`: Enables H.264 / HEVC hardware video decode with `AppleIntelTGLGraphicsVADriver.bundle`.
   - `itlwm_he=1`: Enables 802.11ax (Wi-Fi 6) mode on the Intel AX210.
+- **Pin macOS Version (Disable OTA Updates)**: Since the graphics stack and `SoftCursorFix.kext` target build `25G241`, disable automatic updates via `sudo softwareupdate --schedule off` and block `swscan.apple.com`, `swcdn.apple.com`, `swdist.apple.com`, `mesu.apple.com`, `gdmf.apple.com`, and `updates.cdn-apple.com` in `/etc/hosts` (App Store and iCloud remain unaffected).
+- **Optional Health Watchdog (`tools/xe-watchdog.py` + `tools/XeNotify.swift`)**: Lightweight `LaunchAgent` watchdog (runs every 45 s with zero resident memory) monitoring `IntelAccelerator` `recoveryCount`, GART usage, single GPU Helper RSS bloat (`>= 1400 MB`), `ReportCrash` loops, and CPU package temperature (`>= 95°C`). Clicking an alert opens Terminal with the targeted `kill` command ready for Enter confirmation.
 
 ---
 
 ## Known Issues & Caveats
 
 - **Avoid iStat Menus (especially launch-at-login)**: Installing iStat Menus with auto-start enabled causes a hard system freeze on every boot as soon as its status items appear in the menu bar. If you run into a boot-freeze loop after installing it, boot with the unaccelerated rescue config (`config-install.plist`) to disable auto-start or uninstall iStat Menus.
+- **No Microphone / Camera Permission Prompts (`amfi_get_out_of_my_way=1` side effect & workaround)**:
+  - Loading the ad-hoc signed graphics driver (`AppleIntelTGLGraphicsMTLDriver` / `libxedrv.dylib`) currently requires `amfi_get_out_of_my_way=1` (tested `AMFIPass.kext 1.4.1` crashes `WindowServer` on Tahoe `25G241`), which prevents `tccd` from showing microphone/camera prompts and leaves the Privacy list empty.
+  - **Verified workaround (no reboot, no EFI changes)**: Look up the target app's Bundle ID via `osascript -e 'id of app "WeChat"'` and insert the grant directly into the user's `TCC.db` (relaunch the app to take effect; it will also appear in System Settings):
+    ```bash
+    # Grant Microphone access (replace kTCCServiceMicrophone with kTCCServiceCamera for Camera)
+    sqlite3 "$HOME/Library/Application Support/com.apple.TCC/TCC.db" \
+      "INSERT OR REPLACE INTO access (service, client, client_type, auth_value, auth_reason, auth_version, csreq, flags) VALUES ('kTCCServiceMicrophone', 'com.tencent.xinWeChat', 0, 2, 2, 1, NULL, 0);"
+    ```
 
 ---
 

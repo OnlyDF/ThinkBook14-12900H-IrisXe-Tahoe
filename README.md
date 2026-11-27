@@ -49,8 +49,11 @@
 │       └── Kexts/                  # 完整内核扩展（含 NootedGreen / YogaGMSFix / SoftCursorFix / SimpleHDA）
 ├── patches/
 │   └── thinkbook-register.patch    # 适配 ThinkBook 的上游注册脚本补丁
-└── research/
-    └── soft-cursor-fix/            # SoftCursorFix.kext 源码与本地编译脚本
+├── research/
+│   └── soft-cursor-fix/            # SoftCursorFix.kext 源码与本地编译脚本
+└── tools/
+    ├── xe-watchdog.py              # 轻量全机健康预警脚本（GPU/显存/崩溃/95°C 高温）
+    └── XeNotify.swift              # macOS 原生常驻通知器源码（点击可弹出待确认终端命令）
 ```
 
 ---
@@ -101,12 +104,22 @@ sudo rm -f /var/vm/sleepimage
   - `ngreenpm=64`：启用混合架构 CPU 睿频与节能策略，并将 MCHBAR PL1 功耗墙设为 64W（NootedGreen 支持范围 `5–64` W；解决 EC 默认锁死 25W 的问题；偏爱静音可改为 `ngreenpm=45`，通过 `sysctl debug.xepm` 查看状态）。
   - `-ngreengva`：配合 `AppleIntelTGLGraphicsVADriver.bundle` 开启 H.264 / HEVC 视频硬解。
   - `itlwm_he=1`：为 AX210 开启 802.11ax (Wi-Fi 6) 模式。
+- **锁定系统版本（禁用 macOS OTA 更新）**：驱动与 `SoftCursorFix.kext` 依赖 `25G241` 内核符号，建议执行 `sudo softwareupdate --schedule off` 并在 `/etc/hosts` 屏蔽 `swscan.apple.com` / `swcdn.apple.com` / `swdist.apple.com` / `mesu.apple.com` / `gdmf.apple.com` / `updates.cdn-apple.com`（不影响 App Store 与 iCloud）。
+- **可选全机健康预警工具（`tools/xe-watchdog.py` + `tools/XeNotify.swift`）**：可配合 `LaunchAgent` 每 45 秒静默巡检 `IntelAccelerator` `recoveryCount`、全局 GART 显存、单进程 GPU Helper 显存膨胀（`>= 1400 MB`）、`ReportCrash` 崩溃循环与 CPU 封装高温（`>= 95°C`），命中时弹出原生提醒，点击后在终端预填精准 `kill` 命令等待回车确认。
 
 ---
 
 ## 已知问题与注意事项
 
 - **请勿安装 iStat Menus（尤其不要开启开机自启）**：实测安装 iStat Menus 并设为开机自启后，每次开机进入桌面、顶部菜单栏刚出现 iStat Menus 状态项即会触发系统卡死。若已安装导致开机反复卡死，请切换至无加速救援配置（`config-install.plist`）进入系统后关闭自启或卸载 iStat Menus。
+- **麦克风 / 摄像头权限不弹窗（`amfi_get_out_of_my_way=1` 副作用及解法）**：
+  - 由于加载本地自签核显驱动（`AppleIntelTGLGraphicsMTLDriver` / `libxedrv.dylib`）必须保留 `amfi_get_out_of_my_way=1`（实测旧版 `AMFIPass.kext 1.4.1` 在 Tahoe `25G241` 下会导致 `WindowServer` 崩溃无法进桌面），macOS 的 `tccd` 不会自动弹出麦克风/摄像头授权框，隐私列表为空。
+  - **已验证解法（免重启、不动 EFI）**：先用 `osascript -e 'id of app "WeChat"'` 查出目标应用的 Bundle ID，再直接向当前用户的 `TCC.db` 写入授权（写入后重开目标应用即生效，系统设置列表也会立即显示）：
+    ```bash
+    # 授予麦克风权限（摄像头将 kTCCServiceMicrophone 替换为 kTCCServiceCamera）
+    sqlite3 "$HOME/Library/Application Support/com.apple.TCC/TCC.db" \
+      "INSERT OR REPLACE INTO access (service, client, client_type, auth_value, auth_reason, auth_version, csreq, flags) VALUES ('kTCCServiceMicrophone', 'com.tencent.xinWeChat', 0, 2, 2, 1, NULL, 0);"
+    ```
 
 ---
 
